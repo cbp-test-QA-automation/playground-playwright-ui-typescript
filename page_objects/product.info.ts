@@ -1,63 +1,41 @@
-import { expect, type Page, type Locator, request } from "@playwright/test";
+import { type Page, expect } from "@playwright/test";
+import { Steps } from "@/utilities/stepdecorator";
 
-export default class ProductInfo {
+export default class ProductCartPage {
   readonly page: Page;
 
   constructor(page: Page) {
     this.page = page;
   }
 
-  async validateRemoveOrAddToCart() {
-    const addToCart = this.page.getByRole("button", { name: "Add to cart" });
-    const removeButton = this.page.getByRole("button", { name: "Add to cart" });
-    //check either 'Add to cart' or 'Remove' button present on each item
-    const buttons = await addToCart.or(removeButton).all();
-    buttons.forEach(async (ele) => await expect.soft(ele).toBeVisible());
+  @Steps("Validate the Product Info Page")
+  async validateProductInfoPage() {
+    await expect(this.page.getByTestId("inventory-item-name")).toBeVisible();
+    await expect(this.page.getByTestId("inventory-item-desc")).toBeVisible();
+    await expect(
+      this.page.getByTestId("item-sauce-labs-backpack-img"),
+    ).toBeVisible();
+    await expect(this.page.getByTestId("inventory-item-price")).toBeVisible();
+    await expect(this.page.getByTestId("add-to-cart")).toBeVisible();
+    await expect(this.page.getByTestId("back-to-products")).toBeVisible();
   }
 
-  async validateAllItemsHavePrice() {
-    //all products have the $ price symbol
-    for (const li of await this.page
-      .locator(".inventory_item")
-      .getByTestId("inventory-item-price")
-      .all())
-      await expect.soft(li).toHaveText(/\$\d{1,3}\.\d{0,2}/);
+  @Steps("Click the Cart")
+  async clickCart() {
+    await this.page.getByTestId("shopping-cart-link").click();
+    await expect(this.page.getByTestId("title")).toHaveText("Your Cart", {
+      ignoreCase: false,
+    });
   }
 
-  async validateAllHaveValidImages() {
-    //get all images
-    const images = await this.page.locator("img.inventory_item_img").all();
-
-    let imgUrl = await Promise.all(
-      images.map(async (eacItem) => {
-        const url: string | any = await eacItem.getAttribute("src");
-        return process.env.URL + url;
-      }),
-    );
-    //validate each url response code
-    const context = await request.newContext();
-    await Promise.all(
-      imgUrl.map(async (eachUrl) => {
-        const eachUrlStatus = await context.get(eachUrl);
-        expect(eachUrlStatus.ok()).toBeTruthy();
-      }),
-    );
+  @Steps("Remove item from Cart")
+  async removeItemCart() {
+    await this.page.getByRole("button", { name: "Remove" }).click();
   }
 
-  async validateLowToHighPrice() {
-    await this.page
-      .locator('[data-test="product-sort-container"]')
-      .selectOption("Price (low to high)");
-    await expect(this.page.getByTestId("active-option")).toHaveText(
-      "Price (low to high)",
-      { ignoreCase: true },
-    );
-  }
-
-  async clickAnItem(item: string) {
-    const product = this.page
-      .locator(".inventory_item", { hasText: item })
-      .getByRole("button", { name: "Add to cart" });
-    await product.click();
+  @Steps("Empty Cart")
+  async emptyCart() {
+    await expect(this.page.getByTestId("inventory-item")).not.toBeVisible();
+    await expect(this.page.locator(".shopping_cart_badge")).not.toBeVisible();
   }
 }
