@@ -2,6 +2,11 @@ name: Shared execution run
 on:
     workflow_dispatch: 
 
+permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      id-token: write
 
 jobs:
 
@@ -30,7 +35,7 @@ jobs:
           with:
             path: |
              ~/.cache/ms-playwright
-             key: playwright-${{ hashFiles('package-lock.json') }}
+            key: playwright-${{ hashFiles('package-lock.json') }}
 
         - name: Install dependencies
           id: install-dependencies
