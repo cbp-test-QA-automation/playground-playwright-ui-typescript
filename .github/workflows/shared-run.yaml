@@ -9,46 +9,7 @@ permissions:
       id-token: write
 
 jobs:
-
-    build:
-        runs-on: ubuntu-22.04
-        steps:
-        - name: checkout repo
-          uses: actions/checkout@v4
-
-        - name: setup node
-          uses: actions/setup-node@v4
-          with:
-            node-version: 20
-
-        - name: Cache Node Modules
-          id: cache-node-modules
-          uses: actions/cache@v4
-          with:
-            path: |
-             node_modules
-            key: modules-${{ hashFiles('package-lock.json') }}
-        
-        - name: Cache Playwright Binaries
-          id: cache-playwright
-          uses: actions/cache@v4
-          with:
-            path: |
-             ~/.cache/ms-playwright
-            key: playwright-${{ hashFiles('package-lock.json') }}
-
-        - name: Install dependencies
-          id: install-dependencies
-          if: steps.cache-node-modules.outputs.cache-hit != 'true'
-          run: npm ci
-
-        - name: Get test count
-          id: playwright-count
-          run: |
-                count=$(npx playwright test --list 2>/dev/null | grep '^Total:' | awk '{ if ($2 > 0) print $2; else print 0 }')
-                echo "test_count=$count" >> "$GITHUB_OUTPUT"
     test:
-        needs: [ build]
         runs-on: ubuntu-22.04   
         strategy:
             fail-fast: false
@@ -103,7 +64,7 @@ jobs:
     merge-reports:
     # Merge reports after playwright-tests, even if some shards have failed
         if: ${{ !cancelled() }}
-        needs: [build, test]
+        needs: [test]
 
         runs-on: ubuntu-latest
         steps:
@@ -150,6 +111,14 @@ jobs:
 
         - name: Merge into HTML Report
           run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+        - name: Publish test results in Cloudbees platform
+          uses: cloudbees-io-gha/publish-test-results@v1
+          with:
+            test-type: playwright
+            results-path: playwright-report/*
+            cloudbees-url: "https://api.cloudbees.io"
+            cloudbees-pat: ${{ secrets.CBP_PAT }}
 
         - name: Upload HTML report
           uses: actions/upload-artifact@v4
