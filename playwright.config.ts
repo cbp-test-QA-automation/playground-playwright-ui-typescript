@@ -26,7 +26,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined, //,['.\\custom_report\\customreporter.ts']
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */ //['./custom_report/customreporter.ts']
-  reporter: [
+  reporter: process.env.CI ? 'blob' : [
     ["html", { outputFolder: `./playwright-report/${timestamp}` }],
     ["list"],
     ["./custom_report/customreporter.ts"],
