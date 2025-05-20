@@ -78,7 +78,7 @@ jobs:
           with:
             path: |
              ~/.cache/ms-playwright
-             key: playwright-${{ hashFiles('package-lock.json') }}
+            key: playwright-${{ hashFiles('package-lock.json') }}
 
         - name: Install dependencies
           id: install-dependencies
@@ -129,7 +129,7 @@ jobs:
           with:
             path: |
              ~/.cache/ms-playwright
-             key: playwright-${{ hashFiles('package-lock.json') }}
+            key: playwright-${{ hashFiles('package-lock.json') }}
 
         - name: Install dependencies
           id: install-dependencies
