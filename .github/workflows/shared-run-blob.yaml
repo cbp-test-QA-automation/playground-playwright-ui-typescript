@@ -111,7 +111,7 @@ jobs:
 
         - name: Merge into HTML Report
           run: |
-            npx playwright merge-reports --reporter json ./all-blob-reports >> ./playwright-report/results.json
+            npx playwright merge-reports --reporter json ./all-blob-reports >> results.json
             mkdir -p playwright-report && cp results.json ./playwright-report/
             npx playwright merge-reports --reporter html ./all-blob-reports
           
