@@ -114,6 +114,7 @@ jobs:
             npx playwright merge-reports --reporter json ./all-blob-reports >> results.json
             mkdir -p playwright-report && cp results.json ./playwright-report/
             npx playwright merge-reports --reporter html ./all-blob-reports
+            tree -L 2
           
 
         - name: Publish test results in Cloudbees platform
