@@ -18,6 +18,7 @@ jobs:
             with:
               cloudbees-pat: ${{ secrets.CBP_PAT_GHA }}
               workflow-file-name: "my-workflow.yaml"
+              cloudbees-url: "https://api.saas-qa.beescloud.com"
               workflow-inputs: '{"image-name": "demo-run-cloudbees-workflow", "image-version": "${{ steps.versioning.outputs.version }}", "digest":"${{ steps.image-digest.outputs.digest }}", "url":"${{ steps.image-digest.outputs.url }}" }'
 
           - name: Use runUrl output

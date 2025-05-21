@@ -122,7 +122,7 @@ jobs:
           with:
             test-type: PLAYWRIGHT
             results-path: playwright-report-json/*
-            cloudbees-url: "https://api.cloudbees.io"
+            cloudbees-url: "https://api.saas-qa.beescloud.com"
             cloudbees-pat: ${{ secrets.CBP_PAT }}
 
         - name: Upload HTML report
