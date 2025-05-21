@@ -112,7 +112,7 @@ jobs:
         - name: Merge into HTML Report
           run: |
             npx playwright merge-reports --reporter json ./all-blob-reports >> results.json
-            mkdir -p playwright-report && cp results.json ./playwright-report/
+            mkdir -p playwright-report-json && cp results.json ./playwright-report-json/
             npx playwright merge-reports --reporter html ./all-blob-reports
             tree -L 2
           
@@ -121,7 +121,7 @@ jobs:
           uses: cloudbees-io-gha/publish-test-results@v1
           with:
             test-type: playwright
-            results-path: playwright-report/*
+            results-path: playwright-report-json/*
             cloudbees-url: "https://api.cloudbees.io"
             cloudbees-pat: ${{ secrets.CBP_PAT }}
 
