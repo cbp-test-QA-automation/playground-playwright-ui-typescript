@@ -16,7 +16,7 @@ jobs:
             uses: cloudbees-gha-cbp/run-cloudbees-workflow@main
             id: go-action
             with:
-              cloudbees-pat: ${{ secrets.CBP_PAT }}
+              cloudbees-pat: ${{ secrets.CBP_PAT_GHA }}
               workflow-file-name: "my-workflow.yaml"
               workflow-inputs: '{"image-name": "demo-run-cloudbees-workflow", "image-version": "${{ steps.versioning.outputs.version }}", "digest":"${{ steps.image-digest.outputs.digest }}", "url":"${{ steps.image-digest.outputs.url }}" }'
 
