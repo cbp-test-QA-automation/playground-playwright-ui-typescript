@@ -120,7 +120,7 @@ jobs:
         - name: Publish test results in Cloudbees platform
           uses: cloudbees-io-gha/publish-test-results@v1
           with:
-            test-type: playwright
+            test-type: PLAYWRIGHT
             results-path: playwright-report-json/*
             cloudbees-url: "https://api.cloudbees.io"
             cloudbees-pat: ${{ secrets.CBP_PAT }}
