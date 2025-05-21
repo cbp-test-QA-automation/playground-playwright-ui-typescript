@@ -110,7 +110,9 @@ jobs:
             merge-multiple: true
 
         - name: Merge into HTML Report
-          run: npx playwright merge-reports --reporter html,json ./all-blob-reports
+          run: |
+            npx playwright merge-reports --reporter html,json ./all-blob-reports
+            ls -al ./playwright-report
           
 
         - name: Publish test results in Cloudbees platform
