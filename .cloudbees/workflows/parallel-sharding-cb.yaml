@@ -14,6 +14,10 @@ jobs:
         shell: sh
         run: |
           echo "job1"
+          mkdir -p job-output
+          echo "job1" >> ./job-output/job1.txt
+          tree -L 2
+          echo $(pwd)/job-output >> "$CLOUDBEES_OUTPUTS/job1"
   job2:
     steps:
       - name: Say hello
@@ -21,6 +25,10 @@ jobs:
         shell: sh
         run: |
           echo "job2"
+          mkdir -p job-output
+          echo "job2" >> ./job-output/job2.txt
+          tree -L 2
+          echo $(pwd)/job-output >> "$CLOUDBEES_OUTPUTS/job2"
   final_job:
     needs: [job1, job2]
     steps:
@@ -29,3 +37,5 @@ jobs:
         shell: sh
         run: |
           echo "final job"
+          ls ${{needs.job1.outputs.output1}}
+          ls ${{needs.job2.outputs.output1}}
