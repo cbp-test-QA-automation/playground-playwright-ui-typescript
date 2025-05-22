@@ -20,7 +20,7 @@ jobs:
           echo "job1"
           mkdir -p job-output
           echo "job1" >> ./job-output/job1.txt
-          tree -L 2
+          
           echo $(pwd)/job-output >> "$CLOUDBEES_OUTPUTS/report"
   job2:
     outputs:
@@ -34,7 +34,7 @@ jobs:
           echo "job2"
           mkdir -p job-output
           echo "job2" >> ./job-output/job2.txt
-          tree -L 2
+          
           echo $(pwd)/job-output >> "$CLOUDBEES_OUTPUTS/report"
   final_job:
     needs: [job1, job2]
