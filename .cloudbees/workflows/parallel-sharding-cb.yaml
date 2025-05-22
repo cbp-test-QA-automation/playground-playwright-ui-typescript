@@ -28,7 +28,7 @@ jobs:
         with:
           name: "job1"
           version: "1.0.0"
-          url: "./job-output/job1.txt"
+          url: ${{needs.job1.outputs.output1}}
           
   job2:
     outputs:
@@ -44,6 +44,13 @@ jobs:
           echo "job2" >> ./job-output/job2.txt
           
           echo $(pwd)/job-output >> "$CLOUDBEES_OUTPUTS/report"
+      - name: Inform system that an artifact version was created
+        uses: cloudbees-io/register-build-artifact@v1
+        with:
+          name: "job2"
+          version: "1.0.0"
+          url: ${{needs.job2.outputs.output1}}
+          
   final_job:
     needs: [job1, job2]
     steps:
