@@ -22,6 +22,14 @@ jobs:
           echo "job1" >> ./job-output/job1.txt
           
           echo $(pwd)/job-output >> "$CLOUDBEES_OUTPUTS/report"
+
+      - name: Inform system that an artifact version was created
+        uses: cloudbees-io/register-build-artifact@v1
+        with:
+          name: "job1"
+          version: "1.0.0"
+          url: "./job-output/job1.txt"
+          
   job2:
     outputs:
       output1: ${{ steps.job2-step.outputs.report }}
