@@ -1,0 +1,139 @@
+apiVersion: automation.cloudbees.io/v1alpha1
+kind: workflow
+name: My workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  init:
+    outputs:
+      timestamp: ${{ steps.step1.outputs.name }}
+    steps:
+        - name: Get timestamp
+          uses: docker://golang:1.20.3-alpine3.17
+          id: step1
+          shell: sh
+          run: |
+            echo $(date +"%Y_%m_%d_%H_%M_%S") > "$CLOUDBEES_OUTPUTS/name"
+
+  job1:
+    needs: [ init ]
+    env:
+          CI: ${{ vars.TEST_CI }}
+    steps:
+      - name: Checkout Repository
+        uses: cloudbees-io/checkout@v1
+        with:
+          fetch-depth: "0"
+
+      - name: Install Dependencies
+        uses: docker://node:21.7-alpine3.18
+        run: |
+          npm ci
+
+      - name: Running automated e2e tests
+        id: run-non-regression-tests
+        uses: docker://mcr.microsoft.com/playwright:v1.51.1-noble
+        run: |
+            npx playwright test --shard=1/2 || exit 1
+
+      - name: configure aws credentials
+        uses: cloudbees-io/configure-aws-credentials@v1
+        if: ${{always()}}
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+
+      - name: Upload files to S3 using AWS CLI
+        uses: docker://amazon/aws-cli
+        if: ${{always()}}
+        shell: bash
+        run: |
+          aws s3 cp ${{ cloudbees.workspace }}/blob-report s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} --recursive
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+          AWS_REGION: us-east-1
+
+  job2:
+    needs: [ init ]
+    env:
+          CI: ${{ vars.TEST_CI }}
+    steps:
+      - name: Checkout Repository
+        uses: cloudbees-io/checkout@v1
+        with:
+          fetch-depth: "0"
+
+      - name: Install Dependencies
+        uses: docker://node:21.7-alpine3.18
+        run: |
+          npm ci
+
+      - name: Running automated e2e tests
+        id: run-non-regression-tests
+        uses: docker://mcr.microsoft.com/playwright:v1.51.1-noble
+        run: |
+            npx playwright test --shard=2/2 || exit 1
+
+      - name: configure aws credentials
+        uses: cloudbees-io/configure-aws-credentials@v1
+        if: ${{always()}}
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+          
+      - name: Upload files to S3 using AWS CLI
+        uses: docker://amazon/aws-cli
+        if: ${{always()}}
+        shell: bash
+        run: |
+          aws s3 cp ${{ cloudbees.workspace }}/blob-report s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} --recursive
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+          AWS_REGION: us-east-1
+  merge:
+    needs: [ job1, job2]
+    env:
+          CI: ${{ vars.TEST_CI }}
+    steps:
+      - name: Checkout Repository
+        uses: cloudbees-io/checkout@v1
+        with:
+          fetch-depth: "0"
+
+      - name: Install Dependencies
+        uses: docker://node:21.7-alpine3.18
+        run: |
+          npm ci
+
+      - name: configure aws credentials
+        uses: cloudbees-io/configure-aws-credentials@v1
+        if: ${{always()}}
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+          
+      - name: Download files to S3 to local using AWS CLI
+        uses: docker://amazon/aws-cli
+        if: ${{always()}}
+        shell: bash
+        run: |
+          mkdir -p all-blob-reports
+          aws s3 cp ${{ cloudbees.workspace }}/blob-report s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} --recursive
+          aws s3 cp s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} ${{ cloudbees.workspace }}/all-blob-reports
+          ls -al
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+          AWS_REGION: us-east-1
+
+      - name: merge report
+        uses: docker://node:21.7-alpine3.18
+        run: |
+            npx playwright merge-reports --reporter html ./all-blob-reports
