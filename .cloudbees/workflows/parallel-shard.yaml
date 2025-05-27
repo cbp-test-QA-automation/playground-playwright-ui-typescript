@@ -15,6 +15,7 @@ jobs:
           id: step1
           shell: sh
           run: |
+            echo $(date +"%Y_%m_%d_%H_%M_%S")
             echo $(date +"%Y_%m_%d_%H_%M_%S") > "$CLOUDBEES_OUTPUTS/name"
 
   job1:
@@ -51,6 +52,7 @@ jobs:
         if: ${{always()}}
         shell: bash
         run: |
+          ls -al ./blob-report
           aws s3 cp ${{ cloudbees.workspace }}/blob-report s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} --recursive
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
