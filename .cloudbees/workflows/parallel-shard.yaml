@@ -93,6 +93,7 @@ jobs:
         if: ${{always()}}
         shell: bash
         run: |
+          ls -lh "${{ cloudbees.workspace }}/blob-report/"
           aws s3 cp "${{ cloudbees.workspace }}/blob-report/" "s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/" --recursive --debug
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
