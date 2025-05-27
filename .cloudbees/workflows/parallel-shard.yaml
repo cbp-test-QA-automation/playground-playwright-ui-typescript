@@ -125,8 +125,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p all-blob-reports
-          aws s3 cp ${{ cloudbees.workspace }}/blob-report s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} --recursive
-          aws s3 cp s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} ${{ cloudbees.workspace }}/all-blob-reports
+          aws s3 cp s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} ${{ cloudbees.workspace }}/all-blob-reports --recursive
           ls -al
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
@@ -136,4 +135,36 @@ jobs:
       - name: merge report
         uses: docker://node:21.7-alpine3.18
         run: |
+            ls -al
             npx playwright merge-reports --reporter html ./all-blob-reports
+            npx playwright merge-reports --reporter=json ./all-blob-reports > results.json
+            ls -al ./playwright-report
+
+      - name: PlayWright-Test
+        uses: cloudbees-io/publish-test-results@v1
+        if: ${{always()}}
+        with:
+          test-type: playwright
+          folder-name: ${{ cloudbees.workspace }}/results.json
+          
+      - name: Upload merged files to S3 using AWS CLI
+        uses: docker://amazon/aws-cli
+        if: ${{always()}}
+        shell: bash
+        run: |
+          aws s3 cp ${{ cloudbees.workspace }}/html-test-results s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ cloudbees.run_id }}/playwright-report --recursive
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
+          AWS_REGION: us-east-1
+
+      - name: Publish workflow evidence item
+        uses: cloudbees-io/publish-evidence-item@v1
+        if: ${{always()}}
+        with:
+          content: |
+             ## Test Automation Report Details:
+              | Report Link |
+              |-------------|
+              | [Test Automation Report](https://cb-test-automation.saas-preprod.beescloud.com/hosting-test/${{ cloudbees.run_id }}/html-test-results/index.html)  
+              *(Right-click the link and choose "Open Link in New Tab" if the link doesn’t open in a new tab automatically.)* |
