@@ -22,6 +22,7 @@ jobs:
     needs: [ init ]
     env:
           CI: ${{ vars.TEST_CI }}
+          JOB_NAME: job1
     steps:
       - name: Checkout Repository
         uses: cloudbees-io/checkout@v1
@@ -63,6 +64,7 @@ jobs:
     needs: [ init ]
     env:
           CI: ${{ vars.TEST_CI }}
+          JOB_NAME: job2
     steps:
       - name: Checkout Repository
         uses: cloudbees-io/checkout@v1
@@ -155,7 +157,7 @@ jobs:
         if: ${{always()}}
         shell: bash
         run: |
-          aws s3 cp ${{ cloudbees.workspace }}/html-test-results/ s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ cloudbees.run_id }}/playwright-report/ --recursive
+          aws s3 cp ${{ cloudbees.workspace }}//playwright-report/  s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ cloudbees.run_id }}/html-test-results --recursive
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
