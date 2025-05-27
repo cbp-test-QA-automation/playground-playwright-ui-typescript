@@ -129,7 +129,7 @@ jobs:
         run: |
           mkdir -p all-blob-reports
           ls -al
-          aws s3 cp s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/ ${{ cloudbees.workspace }}/all-blob-reports --recursive
+          aws s3 cp "s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/" "./all-blob-reports" --recursive
           ls -al
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
