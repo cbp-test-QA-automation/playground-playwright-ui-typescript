@@ -51,7 +51,7 @@ export default defineConfig({
        name: 'Sauce Demo - Chrome',
       use: {
             ...devices['Desktop Chrome'],
-            channel: 'chrome',
+            //channel: 'chrome',
             testIdAttribute: 'data-test',
             launchOptions:{
                       args: ['--start-maximized']
