@@ -27,7 +27,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined, //,['.\\custom_report\\customreporter.ts']
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */ //['./custom_report/customreporter.ts']
   reporter: process.env.CI ? [
-   ['blob', { outputFile: `./blob-report/report-${timestamp}.zip` }]]
+   ['blob', { outputFile: `./blob-report/report-${process.env.JOB_NAME}.zip` }]]
    : [
     ["html", { outputFolder: `./playwright-report/${timestamp}` }],
     ["list"],
