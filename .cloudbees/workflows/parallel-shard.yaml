@@ -97,7 +97,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
           AWS_REGION: us-east-1
   merge:
-    needs: [ job1, job2]
+    needs: [ init, job1, job2]
     env:
           CI: ${{ vars.TEST_CI }}
     steps:
