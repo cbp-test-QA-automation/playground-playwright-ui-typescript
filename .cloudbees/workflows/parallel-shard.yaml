@@ -53,7 +53,7 @@ jobs:
         shell: bash
         run: |
           ls -al ./blob-report
-          aws s3 cp "${{ cloudbees.workspace }}/blob-report/" "s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/" --recursive --debug
+          aws s3 cp "${{ cloudbees.workspace }}/blob-report/" "s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/" --recursive 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
@@ -94,7 +94,7 @@ jobs:
         shell: bash
         run: |
           ls -lh "${{ cloudbees.workspace }}/blob-report/"
-          aws s3 cp "${{ cloudbees.workspace }}/blob-report/" "s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/" --recursive --debug
+          aws s3 cp "${{ cloudbees.workspace }}/blob-report/" "s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/" --recursive 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p all-blob-reports
-          aws s3 cp s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }} ${{ cloudbees.workspace }}/all-blob-reports --recursive
+          aws s3 cp s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ needs.init.outputs.timestamp }}/ ${{ cloudbees.workspace }}/all-blob-reports/ --recursive
           ls -al
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
@@ -155,7 +155,7 @@ jobs:
         if: ${{always()}}
         shell: bash
         run: |
-          aws s3 cp ${{ cloudbees.workspace }}/html-test-results s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ cloudbees.run_id }}/playwright-report --recursive
+          aws s3 cp ${{ cloudbees.workspace }}/html-test-results/ s3://cloudbees-saas-preprod-trufflehog-test-actions-logs/hosting-test/${{ cloudbees.run_id }}/playwright-report/ --recursive
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.CB_ACTIONS_TEST_AWS_ACCESS_KEY  }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.CB_ACTIONS_TEST_AWS_SECRET_KEY }}
@@ -170,4 +170,11 @@ jobs:
               | Report Link |
               |-------------|
               | [Test Automation Report](https://cb-test-automation.saas-preprod.beescloud.com/hosting-test/${{ cloudbees.run_id }}/html-test-results/index.html)  
-              *(Right-click the link and choose "Open Link in New Tab" if the link doesn’t open in a new tab automatically.)* |
+              | *(Right-click the link and choose "Open Link in New Tab" if the link doesn’t open in a new tab automatically.)* |
+
+      - name: Fail the build if there any failed cases
+        if: ${{always()}}
+        uses: docker://golang:1.20.3-alpine3.17
+        shell: sh
+        run: |
+          grep -q 'status: failed' results.json && exit 1
